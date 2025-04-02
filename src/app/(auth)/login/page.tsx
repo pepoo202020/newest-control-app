@@ -62,11 +62,11 @@ export default function LoginPage() {
       }
        
       if (isLoading) {
-        return <Loading isLoading={isLoading} />
+        return <Loading  />
       }
     return <div className="flex flex-col h-screen w-screen items-center justify-center bg-neutral-100 dark:bg-neutral-900">
         <LogoComponent size={logoSizes.lg} />
-        <Card className="w-[60%] lg:w-[45%] mt-5">
+        <Card className="w-[60%] lg:w-[45%] mt-5 bg-white dark:bg-gray-900">
             <CardHeader>
                 <CardTitle className="w-full text-center">تسجيل الدخول</CardTitle>
                 <CardDescription className="w-full text-center">
@@ -114,7 +114,7 @@ export default function LoginPage() {
                                 </FormItem>
                             )}
                          />
-                         <Button className="w-full" type="submit" disabled={isLoading}>
+                         <Button className="w-full bg-blue-950 dark:bg-blue-500 text-white dark:text-white" type="submit" disabled={isLoading}>
                             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "تسجيل الدخول"}
                          </Button>
                     </form>

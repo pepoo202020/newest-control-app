@@ -18,9 +18,6 @@ const config = {
       },
     },
     extend: {
-      fontFamily: {
-        cairo: ['var(--font-cairo)'],
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -61,6 +58,9 @@ const config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        cairo: ["var(--font-cairo)"],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -77,7 +77,7 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require('tailwindcss-flip')],
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config
 
 export default config
