@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "ts-node  prisma/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -45,6 +46,7 @@
     "tailwindcss": "^4.1.0",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-flip": "^1.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

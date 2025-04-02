@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Cairo } from "next/font/google";
 import { Toaster } from "sonner";
+import AuthProvider from "@/components/providers";
 const cairo = Cairo({subsets: ['arabic'], display: 'swap'})
 
 export const metadata: Metadata = {
@@ -19,8 +20,10 @@ export default function RootLayout({
       <body
         className={cairo.className}
       >
+        <AuthProvider>
         {children}
         <Toaster position="top-center" richColors  />
+        </AuthProvider>
       </body>
     </html>
   );
