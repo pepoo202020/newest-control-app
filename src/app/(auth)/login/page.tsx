@@ -15,11 +15,18 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import Loading from "@/components/shared/loading"
-
+import { useSession } from "next-auth/react"
 export default function LoginPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const {data: session} = useSession()
+
+    useEffect(() => {
+        if(session?.user) {
+            router.push("/dashboard")   
+        }
+    },[session])
 
     const form = useForm<LoginSchema>({
         resolver: zodResolver(loginSchema),
@@ -114,7 +121,7 @@ export default function LoginPage() {
                                 </FormItem>
                             )}
                          />
-                         <Button className="w-full bg-blue-950 dark:bg-blue-500 text-white dark:text-white" type="submit" disabled={isLoading}>
+                         <Button className="w-full bg-blue-950 hover:bg-blue-900 dark:bg-blue-500 dark:hover:bg-blue-400 text-white dark:text-white" type="submit" disabled={isLoading}>
                             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "تسجيل الدخول"}
                          </Button>
                     </form>
