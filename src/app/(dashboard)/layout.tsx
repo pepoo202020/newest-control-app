@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import Loading from '@/components/shared/loading'
 import DashboardHeader from '@/components/dashboard/shared/header'
 import { RoleProvider } from '@/providers/role-provider'
+import MenuNavbar from '@/components/dashboard/menu-navbar'
 
 export default function DashboardLayout({
   children,
@@ -14,6 +15,7 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession()
   const userRoles = session?.user.roles as string[]
+ 
  
   const router = useRouter()
 
@@ -37,7 +39,7 @@ export default function DashboardLayout({
       >
         <DashboardHeader />
         <div className="flex-1 p-5">{children}</div>
-        <div>navbar</div>
+        <MenuNavbar />
       </main>
     </RoleProvider>
   )
