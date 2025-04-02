@@ -1,0 +1,397 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ======================== ENUMS ========================
+enum RoleType {
+  ADMIN 
+  CONTROLLER
+  TEACHER
+}
+
+enum TermStatus {
+  ACTIVE
+  COMPLETED
+  NOT_STARTED
+  EXAMS
+  GRADING
+  RECORDING
+  REVIEWING
+  RESULTS
+}
+
+enum StudentStatus {
+  QUALIFIED
+  NOT_QUALIFIED
+}
+
+enum SubjectGradeStatus {
+  NOT_PRESENTED
+  QUALIFIED
+  NOT_QUALIFIED
+}
+
+enum BehaviorGradeStatus {
+  QUALIFIED
+  NOT_QUALIFIED
+}
+
+enum AbsenceStatus {
+  NOT_ACTIVE
+  QUALIFIED
+  NOT_QUALIFIED
+}
+
+// ======================== USER MANAGEMENT MODELS ========================
+model User {
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  password          String // bcrypt - كلمة السر مشفرة
+  image             String?            @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkiIFjCOZ-mMeqxd2ryrneiHedE8G9S0AboA&s")
+  isActive          Boolean            @default(true) // لتفعيل أو تعطيل المستخدم
+  userRoles         UserRole[]
+  notifications     Notification[]
+  subjectAuditLogs  SubjectAuditLog[] // سجل التعديلات على درجات المواد
+  behaviorAuditLogs BehaviorAuditLog[] // سجل التعديلات على درجات السلوك
+  absenceAuditLogs  AbsenceAuditLog[] // سجل التعديلات على درجات الغياب
+  subjects          Subject[]          @relation("UserSubjects") // المستخدمين المسئولين عن المادة
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([email])
+  @@map("users")
+}
+
+model Role {
+  id                  String     @id @default(cuid())
+  name                RoleType   @unique
+  canAccessAllClasses Boolean    @default(false) // هل يمكنه الوصول لكل الفصول؟
+  userRoles           UserRole[]
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  @@map("roles")
+}
+
+model UserRole {
+  id               String            @id @default(cuid())
+  userId           String
+  roleId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role             Role              @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  classAssignments ClassAssignment[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model ClassAssignment {
+  id                 String              @id @default(cuid())
+  userRoleId         String
+  classId            String
+  userRole           UserRole            @relation(fields: [userRoleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  class              Class               @relation(fields: [classId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subjectAssignments SubjectAssignment[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@unique([userRoleId, classId])
+  @@index([userRoleId])
+  @@index([classId])
+  @@map("class_assignments")
+}
+
+model SubjectAssignment {
+  id                String          @id @default(cuid())
+  classAssignmentId String
+  subjectId         String
+  classAssignment   ClassAssignment @relation(fields: [classAssignmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subject           Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([classAssignmentId, subjectId])
+  @@index([classAssignmentId])
+  @@index([subjectId])
+  @@map("subject_assignments")
+}
+
+// ======================== ACADEMIC STRUCTURE MODELS ========================
+model Term {
+  id             String          @id @default(cuid())
+  name           String
+  description    String? // وصف اختياري للترم
+  startDate      DateTime
+  endDate        DateTime
+  examStartDate  DateTime
+  examEndDate    DateTime
+  status         TermStatus      @default(NOT_STARTED)
+  classes        Class[]
+  subjects       Subject[]
+  subjectGrades  SubjectGrade[]
+  behaviorGrades BehaviorGrade[]
+  absenceTypes   AbsenceType[]
+  absenceGrades  AbsenceGrade[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([status])
+  @@map("terms")
+}
+
+model Level {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String? // وصف اختياري للمستوى
+  classes     Class[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("levels")
+}
+
+model Class {
+  id               String            @id @default(cuid())
+  name             String
+  description      String? // وصف اختياري للفصل
+  isActive         Boolean           @default(true) // لتفعيل أو تعطيل الفصل
+  levelId          String
+  image            String?           @default("https://png.pngtree.com/png-vector/20190723/ourmid/pngtree-classroom-icon-for-your-project-png-image_1571714.jpg")
+  termId           String?
+  level            Level             @relation(fields: [levelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  term             Term?             @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  classAssignments ClassAssignment[]
+  students         Student[]
+  subjects         Subject[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([name, levelId, termId])
+  @@index([levelId])
+  @@index([termId])
+  @@index([isActive])
+  @@map("classes")
+}
+
+model Subject {
+  id                 String              @id @default(cuid())
+  name               String
+  maxScore           Float
+  classId            String
+  termId             String
+  description        String? // وصف اختياري للمادة
+  isActive           Boolean             @default(true) // لتفعيل أو تعطيل المادة
+  class              Class               @relation(fields: [classId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  term               Term                @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  users              User[]              @relation("UserSubjects") // المستخدمين المسئولين عن المادة
+  subjectAssignments SubjectAssignment[]
+  subjectGrades      SubjectGrade[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@unique([name, classId, termId])
+  @@index([classId])
+  @@index([termId])
+  @@index([isActive])
+  @@map("subjects")
+}
+
+// ======================== STUDENT MANAGEMENT MODELS ========================
+model Student {
+  id             String          @id @default(cuid())
+  name           String
+  classId        String
+  overallGrade   Float?
+  status         StudentStatus   @default(NOT_QUALIFIED)
+  image          String          @default("https://cdn-icons-png.flaticon.com/512/9187/9187604.png")
+  class          Class           @relation(fields: [classId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subjectGrades  SubjectGrade[]
+  behaviorGrades BehaviorGrade[]
+  absenceGrades  AbsenceGrade[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([classId])
+  @@index([status])
+  @@index([name])
+  @@map("students")
+}
+
+model SubjectGrade {
+  id               String             @id @default(cuid())
+  studentId        String
+  subjectId        String
+  grade            Float
+  termId           String
+  status           SubjectGradeStatus @default(NOT_PRESENTED)
+  student          Student            @relation(fields: [studentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subject          Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  term             Term               @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subjectAuditLogs SubjectAuditLog[] // سجل التعديلات على درجات المواد
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@unique([studentId, subjectId, termId])
+  @@index([studentId])
+  @@index([subjectId])
+  @@index([termId])
+  @@index([status])
+  @@map("subject_grades")
+}
+
+model Behavior {
+  id             String          @id @default(cuid())
+  name           String          @unique
+  maxGrade       Float
+  description    String? // وصف اختياري للسلوك
+  behaviorGrades BehaviorGrade[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("behaviors")
+}
+
+model BehaviorGrade {
+  id                String              @id @default(cuid())
+  studentId         String
+  behaviorId        String
+  grade             Float
+  termId            String
+  status            BehaviorGradeStatus @default(NOT_QUALIFIED)
+  student           Student             @relation(fields: [studentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  behavior          Behavior            @relation(fields: [behaviorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  term              Term                @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  behaviorAuditLogs BehaviorAuditLog[] // سجل التعديلات على درجات السلوك
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@unique([studentId, behaviorId, termId])
+  @@index([studentId])
+  @@index([behaviorId])
+  @@index([termId])
+  @@index([status])
+  @@map("behavior_grades")
+}
+
+model AbsenceType {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  maxGrade      Float
+  description   String? // وصف اختياري لنوع الغياب
+  termId        String
+  term          Term           @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  absenceGrades AbsenceGrade[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([termId])
+  @@map("absence_types")
+}
+
+model AbsenceGrade {
+  id               String            @id @default(cuid())
+  studentId        String
+  absenceTypeId    String
+  grade            Float
+  termId           String
+  status           AbsenceStatus     @default(NOT_ACTIVE)
+  student          Student           @relation(fields: [studentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  absenceType      AbsenceType       @relation(fields: [absenceTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  term             Term              @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  absenceAuditLogs AbsenceAuditLog[] // سجل التعديلات على درجات الغياب
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([studentId, absenceTypeId, termId])
+  @@index([studentId])
+  @@index([absenceTypeId])
+  @@index([termId])
+  @@index([status])
+  @@map("absence_grades")
+}
+
+// ======================== AUDIT LOGS MODELS ========================
+model SubjectAuditLog {
+  id        String       @id @default(cuid())
+  userId    String
+  gradeId   String
+  oldValue  Float?
+  newValue  Float?
+  reason    String?
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  grade     SubjectGrade @relation(fields: [gradeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([gradeId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("subject_audit_logs")
+}
+
+model BehaviorAuditLog {
+  id        String        @id @default(cuid())
+  userId    String
+  gradeId   String
+  oldValue  Float?
+  newValue  Float?
+  reason    String?
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  grade     BehaviorGrade @relation(fields: [gradeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([gradeId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("behavior_audit_logs")
+}
+
+model AbsenceAuditLog {
+  id        String       @id @default(cuid())
+  userId    String
+  gradeId   String
+  oldValue  Float?
+  newValue  Float?
+  reason    String?
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  grade     AbsenceGrade @relation(fields: [gradeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([gradeId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("absence_audit_logs")
+}
+
+// ======================== NOTIFICATIONS MODELS ========================
+model Notification {
+  id        String   @id @default(cuid())
+  message   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
