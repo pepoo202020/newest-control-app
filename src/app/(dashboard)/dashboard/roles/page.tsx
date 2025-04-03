@@ -10,10 +10,10 @@ import { getRoleImage } from '@/utils/get-role-image'
 import { Role, UserRole } from '@prisma/client'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
-import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-
+import RoleProfileDialog from '@/components/dashboard/roles/role-profile-dialog'
+import { useRouter } from 'next/navigation'
 interface RoleWithUsers extends Role {
     userRoles: UserRole[]
 }
@@ -23,7 +23,7 @@ export default function RolesPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [selectedRole, setSelectedRole] = useState<Role | null>(null)
-    const { theme } = useTheme()
+    const router = useRouter()
 
     useEffect(() => {
         const fetchRoles = async () => {
@@ -83,20 +83,7 @@ export default function RolesPage() {
                             </h2>
                             
                             <div className="flex items-center mt-2">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                    title="عرض الملف الشخصي"
-                                >
-                                    <Image
-                                        src="/icons/profile.png"
-                                        alt="عرض الملف الشخصي"
-                                        width={16}
-                                        height={16}
-                                        className="opacity-70"
-                                    />
-                                </Button>
+                               <RoleProfileDialog role={role} />
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -152,7 +139,7 @@ export default function RolesPage() {
                         "border-gray-200 dark:border-gray-700",
                         "border-2 border-dashed"
                     )}
-                    onClick={() => {/* Add new role handler */}}
+                    onClick={() => {router.push('/dashboard/roles/new')}}
                 >
                     <CardContent className="flex h-full w-full items-center justify-center p-4">
                         <div className="flex flex-col items-center gap-2">

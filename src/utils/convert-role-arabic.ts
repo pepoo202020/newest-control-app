@@ -1,4 +1,3 @@
-import { Role } from "@prisma/client";
 
 export const convertRoleArabic = (role: string) => {
     switch (role) {
