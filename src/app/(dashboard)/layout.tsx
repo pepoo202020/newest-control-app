@@ -34,11 +34,11 @@ export default function DashboardLayout({
     <RoleProvider initialRole={userRoles[0]}>
       <main
         className={cn(
-          "w-screen h-screen overflow-hidden flex flex-col dark:bg-[#1D253B50] dark:text-white bg-neutral-200 text-[#1D253B]"
+          "w-screen h-screen overflow-hidden  flex flex-col dark:bg-[#1D253B50] dark:text-white bg-neutral-200 text-[#1D253B]"
         )}
       >
         <DashboardHeader />
-        <div className="flex-1 p-5">{children}</div>
+        <div className="flex-1 p-5 overflow-y-auto mb-16 lg:mb-0">{children}</div>
         <MenuNavbar />
       </main>
     </RoleProvider>

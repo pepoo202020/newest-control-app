@@ -6,7 +6,9 @@ import { Role, UserRole } from '@prisma/client'
 import Image from 'next/image'
 import React from 'react'
 
-export default function RoleProfileDialog({role}: {role: Role & {userRoles: UserRole[]}}) {
+
+export default function RoleProfileDialog({role, assigUserClickHandler}: {role: Role & {userRoles: UserRole[]}, assigUserClickHandler: (id: string) => void}) {
+    
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -45,7 +47,7 @@ export default function RoleProfileDialog({role}: {role: Role & {userRoles: User
                     </div>
                 </div>
                 <div className='flex items-center justify-end w-full gap-2'>
-                    <Button variant="outline" >تعيين المستخدمين</Button>
+                        <Button variant="outline" onClick={() => assigUserClickHandler(role.id)}>تعيين المستخدمين</Button>
                     <Button className='bg-red-500 hover:bg-red-600 text-white' >حذف الدور</Button>
                     <Button className='bg-blue-500 hover:bg-blue-600 text-white' >تعديل الدور</Button>
                 </div>

@@ -25,6 +25,10 @@ export default function RolesPage() {
     const [selectedRole, setSelectedRole] = useState<Role | null>(null)
     const router = useRouter()
 
+    const assigUserClickHandler = (id: string) => {
+        router.push(`/dashboard/roles/assign-users?roleId=${id}`)
+    }
+
     useEffect(() => {
         const fetchRoles = async () => {
             try {
@@ -53,7 +57,7 @@ export default function RolesPage() {
                 <RolesSelectFilter roles={roles} setSelectedRole={setSelectedRole} selectedRole={selectedRole} />
             </CustomBreadcrumb>
 
-            <div className='p-2 h-full grid grid-cols-2 md:grid-cols-5 lg:grid-cols-8 gap-5 flex-1'>
+            <div className=' p-2 h-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 gap-5 flex-1'>
                 {filteredRoles.map((role: RoleWithUsers) => (
                     <Card
                         key={role.id}
@@ -83,7 +87,7 @@ export default function RolesPage() {
                             </h2>
                             
                             <div className="flex items-center mt-2">
-                               <RoleProfileDialog role={role} />
+                               <RoleProfileDialog role={role} assigUserClickHandler={assigUserClickHandler} />
                                 <Button
                                     variant="ghost"
                                     size="icon"

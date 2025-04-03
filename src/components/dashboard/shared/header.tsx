@@ -23,7 +23,7 @@ export default function DashboardHeader() {
     }
 
   return (
-    <div className='sticky inset-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-5 px-5 lg:px-10 flex items-center justify-between'>
+    <div className='sticky inset-0 z-50 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-5 px-5 lg:px-10 flex items-center justify-between'>
         {/* LOGO */}
         <LogoComponent size={logoSizes.sm} />
         {/* USER MAIN ROLE HEADER */}
