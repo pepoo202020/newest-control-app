@@ -3,17 +3,17 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { convertRoleArabic } from '@/utils/convert-role-arabic'
 import { getRoleImage } from '@/utils/get-role-image'
-import { useRouter } from 'next/navigation'
 import { TrashIcon } from 'lucide-react'
 import Image from 'next/image'
-import React from 'react'
+import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { RolesWithUser } from '@/app/(dashboard)/dashboard/roles/page'
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 
 
 
-export default function RoleProfileDialog({ role, assigUserClickHandler }: { role: RolesWithUser , assigUserClickHandler: (id: string) => void }) {
-    const router = useRouter()
+export default function RoleProfileDialog({ role, assigUserClickHandler, router }: { role: RolesWithUser , assigUserClickHandler: (id: string) => void,  router: AppRouterInstance }) {
+    const [openState, setOpenState] = useState<boolean>(false)
     const handleDeleteUserRole = async (id: string) => {
         try {
             const res = await fetch(`/api/user-roles/de-assign-user-role`, {
@@ -22,10 +22,13 @@ export default function RoleProfileDialog({ role, assigUserClickHandler }: { rol
             })
             if (res.ok) {
                 toast.success('تم حذف الدور بنجاح')
-                router.push(`/dashboard/roles/`)
+                
             }
         } catch (error) {
             toast.error('حدث خطأ ما')
+        } finally {
+            setOpenState(false)
+            location.reload()
         }
     }
     const handleDeleteRole = async (id: string) => {
@@ -36,15 +39,16 @@ export default function RoleProfileDialog({ role, assigUserClickHandler }: { rol
             })
             if (res.ok) {
                 toast.success('تم حذف الدور بنجاح')
-                router.refresh()
             }
         } catch (error) {
             toast.error('حدث خطأ ما')
+        } finally {
+            location.reload()
         }
     }
 
     return (
-        <Dialog>
+        <Dialog open={openState} onOpenChange={setOpenState}>
             <DialogTrigger asChild>
                 <Button
                     variant="ghost"

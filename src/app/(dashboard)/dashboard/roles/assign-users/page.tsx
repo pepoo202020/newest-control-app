@@ -22,7 +22,7 @@ import { toast } from 'sonner'
 interface UserWithRoles extends User {
     userRoles: UserRole[]
 }
-interface AdminUsersWithRoles extends UserRole{
+interface AdminUsersWithRoles extends UserRole {
     user: User
     role: Role
 }
@@ -38,6 +38,11 @@ export default function AssignUsersPage() {
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
     const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+    const [dataFetched, setDataFetched] = useState({
+        role: false,
+        users: false,
+        adminUsers: false
+    })
     const form = useForm<UsersAssignRoleValidation>({
         resolver: zodResolver(usersAssignRoleValidation),
         defaultValues: {
@@ -55,79 +60,85 @@ export default function AssignUsersPage() {
     }, [roleId, router])
 
 
-   // Fetch data
-   useEffect(() => {
-    const fetchData = async () => {
-        try {
-            setIsLoading(true)
-            setError(null)
+    // Fetch data
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setIsLoading(true)
+                setError(null)
 
-            // Parallel fetch for better performance
-            const [roleResponse, usersResponse, adminUsersResponse] = await Promise.all([
-                fetch(`/api/roles/get-specific?roleId=${roleId}`),
-                
-                fetch('/api/users/all'),
-                fetch('/api/user-roles/get-admin-user-roles'),
-            ])
+                // Parallel fetch for better performance
+                const [roleResponse, usersResponse, adminUsersResponse] = await Promise.all([
+                    fetch(`/api/roles/get-specific?roleId=${roleId}`).then(res => {
+                        setDataFetched(prev => ({...prev, role: true}))
+                        return res
+                    }),
+                    fetch('/api/users/all').then(res => {
+                        setDataFetched(prev => ({...prev, users: true}))
+                        return res
+                    }),
+                    fetch('/api/user-roles/get-admin-user-roles').then(res => {
+                        setDataFetched(prev => ({...prev, adminUsers: true}))
+                        return res
+                    }),
+                ])
 
-            if (!roleResponse.ok) {
-                throw  Error({error: 'فشل في تحميل بيانات الدور'})
+                if (!roleResponse.ok) {
+                    throw Error({ error: 'فشل في تحميل بيانات الدور' })
+                }
+
+                if (!usersResponse.ok) {
+                    throw Error({ error: 'فشل في تحميل بيانات المستخدمين' })
+                }
+
+                const [roleData, usersData, adminUsersData] = await Promise.all([
+                    roleResponse.json(),
+                    usersResponse.json(),
+                    adminUsersResponse.json(),
+                ])
+                setRole(roleData)
+                setUsers(usersData)
+                setAdminUsers(adminUsersData)
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error : 'حدث خطأ غير متوقع'
+                setError(errorMessage as string)
+                toast.error(errorMessage as string)
+            } finally {
+                setIsLoading(false)
             }
-
-            if (!usersResponse.ok) {
-                throw  Error({error: 'فشل في تحميل بيانات المستخدمين'})
-            }
-
-            const [roleData, usersData, adminUsersData ] = await Promise.all([
-                roleResponse.json(),
-                
-                usersResponse.json(),
-                adminUsersResponse.json(),
-            ])
-
-
-            setRole(roleData)
-            setUsers(usersData)
-            setAdminUsers(adminUsersData)
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error : 'حدث خطأ غير متوقع'
-            setError(errorMessage as string)
-            toast.error(errorMessage as string)
-        } finally {
-            setIsLoading(false)
         }
-    }
 
-    if (roleId) {
-        fetchData()
-    }
-}, [roleId])
+        if (roleId) {
+            const fetchDataTimeout = setTimeout(() => {fetchData()}, 500)
+            return () => clearTimeout(fetchDataTimeout) 
+        }
 
-
-
-// Memoized filtered users
-const availableUsers = useMemo(() => {
-    if (!users.length || !roleId) return []
-
-    if (role?.name === 'ADMIN') {
-        // return all users that hasn't any role in it
-        return users.filter(ur => ur.userRoles.length === 0)
-    }
-    
-    return users.filter(user => 
-        !user.userRoles.some(ur => ur.roleId === roleId) && !adminUsers.some(admin => admin.userId === user.id)
-    )
-}, [users, roleId])
+    }, [roleId])
 
 
-const options = useMemo(() => 
-    availableUsers.map((user) => ({
-        label: user.name || user.email || "مستخدم غير معروف",
-        value: user.id
-    }))
-, [availableUsers])
 
-console.log(role)
+    // Memoized filtered users
+    const availableUsers = useMemo(() => {
+        if (!users.length || !roleId) return []
+
+        if (role?.name === 'ADMIN') {
+            // return all users that hasn't any role in it
+            return users.filter(ur => ur.userRoles.length === 0)
+        }
+
+        return users.filter(user =>
+            !user.userRoles.some(ur => ur.roleId === roleId) && !adminUsers.some(admin => admin.userId === user.id)
+        )
+    }, [users, roleId])
+
+
+    const options = useMemo(() =>
+        availableUsers.map((user) => ({
+            label: user.name || user.email || "مستخدم غير معروف",
+            value: user.id
+        }))
+        , [availableUsers])
+
 
 
     const handleUserSelection = (selectedValues: string[]) => {
@@ -160,8 +171,8 @@ console.log(role)
             } else {
                 throw Error(res.message)
             }
-        } catch (error : any) {
-            
+        } catch (error: any) {
+
             const errorMessage = error instanceof Error ? error : 'فشل في تعيين المستخدمين'
             console.log(error)
             toast.error(errorMessage as string)
@@ -169,9 +180,10 @@ console.log(role)
             setIsLoading(false)
         }
     }
-    if (isLoading) <Loading />
-    if (error) <Error error={error} />
-    if (!role) return <div className="text-center p-4">لم يتم العثور على الدور</div>
+// Show loading state until all data is fetched
+if (isLoading || !dataFetched.role || !dataFetched.users || !dataFetched.adminUsers) {
+    return <Loading />
+}    if (error) <Error error={error} />
 
     return (
         <Card className='max-w-2xl mx-auto bg-white dark:bg-gray-800/80 backdrop-blur-sm'>

@@ -52,6 +52,22 @@ export default function RolesPage() {
         fetchRoles()
     }, [])
 
+    const handleDeleteRole = async (id: string) => {
+        try {
+            const res = await fetch(`/api/roles/delete-role`, {
+                method: 'DELETE',
+                body: JSON.stringify({ id })
+            })
+            if (res.ok) {
+                toast.success('تم حذف الدور بنجاح')
+            }
+        } catch (error) {
+            toast.error('حدث خطأ ما')
+        } finally {
+            location.reload()
+        }
+    }
+
     if (isLoading) return <Loading />
     if (error) return <Error error={error} />
 
@@ -89,18 +105,19 @@ export default function RolesPage() {
                                     }
                                 </div>
                             </div>
-                            
+
                             <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-1">
                                 {convertRoleArabic(role.name)}
                             </h2>
-                            
+
                             <div className="flex items-center mt-2">
-                               <RoleProfileDialog role={role} assigUserClickHandler={assigUserClickHandler} />
+                                <RoleProfileDialog router={router} role={role} assigUserClickHandler={assigUserClickHandler} />
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    className="h-8 w-8 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                                     title="تعيين المستخدمين"
+                                    onClick={() => assigUserClickHandler(role.id)}
                                 >
                                     <Image
                                         src="/icons/seminar.png"
@@ -127,8 +144,9 @@ export default function RolesPage() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400"
+                                    className="h-8 w-8 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400"
                                     title="حذف"
+                                    onClick={() => handleDeleteRole(role.id)}
                                 >
                                     <Image
                                         src="/icons/recycle-bin.png"
@@ -142,7 +160,7 @@ export default function RolesPage() {
                         </CardContent>
                     </Card>
                 ))}
-                
+
                 <Card
                     className={cn(
                         "group cursor-pointer transition-all duration-300",
@@ -151,7 +169,7 @@ export default function RolesPage() {
                         "border-gray-200 dark:border-gray-700",
                         "border-2 border-dashed"
                     )}
-                    onClick={() => {router.push('/dashboard/roles/new')}}
+                    onClick={() => { router.push('/dashboard/roles/new') }}
                 >
                     <CardContent className="flex h-full w-full items-center justify-center p-4">
                         <div className="flex flex-col items-center gap-2">
