@@ -18,12 +18,13 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 
-interface UserWithRoles extends UserRole {
+
+interface UserWithRoles extends User {
+    userRoles: UserRole[]
+}
+interface AdminUsersWithRoles extends UserRole{
     user: User
     role: Role
-}
-interface AdminUserWithRoles extends User {
-    userRoles: UserRole[]
 }
 
 export default function AssignUsersPage() {
@@ -32,7 +33,7 @@ export default function AssignUsersPage() {
     const roleId = searchParams.get('roleId')
     const [role, setRole] = useState<Role | null>(null)
     const [users, setUsers] = useState<UserWithRoles[]>([])
-    const [adminUsers, setAdminUsers] = useState<AdminUserWithRoles[]>([])
+    const [adminUsers, setAdminUsers] = useState<AdminUsersWithRoles[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
@@ -64,8 +65,9 @@ export default function AssignUsersPage() {
             // Parallel fetch for better performance
             const [roleResponse, usersResponse, adminUsersResponse] = await Promise.all([
                 fetch(`/api/roles/get-specific?roleId=${roleId}`),
+                
+                fetch('/api/users/all'),
                 fetch('/api/user-roles/get-admin-user-roles'),
-                fetch('/api/users/all')
             ])
 
             if (!roleResponse.ok) {
@@ -76,11 +78,13 @@ export default function AssignUsersPage() {
                 throw  Error({error: 'فشل في تحميل بيانات المستخدمين'})
             }
 
-            const [roleData, usersData, adminUsersData] = await Promise.all([
+            const [roleData, usersData, adminUsersData ] = await Promise.all([
                 roleResponse.json(),
+                
                 usersResponse.json(),
-                adminUsersResponse.json()
+                adminUsersResponse.json(),
             ])
+
 
             setRole(roleData)
             setUsers(usersData)
@@ -100,22 +104,30 @@ export default function AssignUsersPage() {
 }, [roleId])
 
 
+
 // Memoized filtered users
 const availableUsers = useMemo(() => {
     if (!users.length || !roleId) return []
+
+    if (role?.name === 'ADMIN') {
+        // return all users that hasn't any role in it
+        return users.filter(ur => ur.userRoles.length === 0)
+    }
     
     return users.filter(user => 
-        user.role.id !== roleId && !adminUsers.some(admin => admin.id === user.user.id)
+        !user.userRoles.some(ur => ur.roleId === roleId) && !adminUsers.some(admin => admin.userId === user.id)
     )
 }, [users, roleId])
 
 
 const options = useMemo(() => 
     availableUsers.map((user) => ({
-        label: user.user.name || user.user.email || "مستخدم غير معروف",
+        label: user.name || user.email || "مستخدم غير معروف",
         value: user.id
     }))
 , [availableUsers])
+
+console.log(role)
 
 
     const handleUserSelection = (selectedValues: string[]) => {
@@ -178,7 +190,7 @@ const options = useMemo(() =>
                         <MultiSelectCombobox
                             label='اختر المستخدمين'
                             renderItem={(option) => <div>{option.label}</div>}
-                            renderSelectedItem={(value) => <div>{value.length > 0 ? value.map(v => users.find(u => u.id === v)?.user.name || users.find(u => u.id === v)?.user.email || "مستخدم غير معروف").join(', ') : 'لا يوجد مستخدمين لتعيينهم لهذا الدور'}</div>}
+                            renderSelectedItem={(value) => <div>{value.length > 0 ? value.map(v => users.find(u => u.id === v)?.name || users.find(u => u.id === v)?.email || "مستخدم غير معروف").join(', ') : 'لا يوجد مستخدمين لتعيينهم لهذا الدور'}</div>}
                             options={options}
                             value={selectedUsers}
                             onChange={handleUserSelection}

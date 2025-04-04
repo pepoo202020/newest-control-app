@@ -1,9 +1,10 @@
+import { UserRoleWithUser } from '@/app/(dashboard)/dashboard/roles/page'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { convertRoleArabic } from '@/utils/convert-role-arabic'
 import { Role } from '@prisma/client'
 import React from 'react'
 
-export default function RolesSelectFilter({roles, setSelectedRole, selectedRole}: {roles: Role[], setSelectedRole: (role: Role | null) => void, selectedRole: Role | null}) {
+export default function RolesSelectFilter({roles, setSelectedRole, selectedRole}: {roles: UserRoleWithUser[], setSelectedRole: (role: UserRoleWithUser | null) => void, selectedRole: UserRoleWithUser | null}) {
   return (
     <Select onValueChange={(value) => setSelectedRole(roles.find((role) => role.id === value) || null)} defaultValue={selectedRole?.id || 'all'}>
         <SelectTrigger>

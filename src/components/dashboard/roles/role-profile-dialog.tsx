@@ -3,18 +3,16 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { convertRoleArabic } from '@/utils/convert-role-arabic'
 import { getRoleImage } from '@/utils/get-role-image'
-import { Role, User, UserRole } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { TrashIcon } from 'lucide-react'
 import Image from 'next/image'
 import React from 'react'
 import { toast } from 'sonner'
+import { RolesWithUser } from '@/app/(dashboard)/dashboard/roles/page'
 
-interface UserRoleWithUser extends UserRole {
-    user: User
-}
 
-export default function RoleProfileDialog({ role, assigUserClickHandler }: { role: Role & { userRoles: UserRoleWithUser[] }, assigUserClickHandler: (id: string) => void }) {
+
+export default function RoleProfileDialog({ role, assigUserClickHandler }: { role: RolesWithUser , assigUserClickHandler: (id: string) => void }) {
     const router = useRouter()
     const handleDeleteUserRole = async (id: string) => {
         try {
@@ -25,6 +23,20 @@ export default function RoleProfileDialog({ role, assigUserClickHandler }: { rol
             if (res.ok) {
                 toast.success('تم حذف الدور بنجاح')
                 router.push(`/dashboard/roles/`)
+            }
+        } catch (error) {
+            toast.error('حدث خطأ ما')
+        }
+    }
+    const handleDeleteRole = async (id: string) => {
+        try {
+            const res = await fetch(`/api/roles/delete-role`, {
+                method: 'DELETE',
+                body: JSON.stringify({ id })
+            })
+            if (res.ok) {
+                toast.success('تم حذف الدور بنجاح')
+                router.refresh()
             }
         } catch (error) {
             toast.error('حدث خطأ ما')
@@ -75,11 +87,11 @@ export default function RoleProfileDialog({ role, assigUserClickHandler }: { rol
                             <div className='flex flex-col items-start justify-start'>
                                 <h3 className='text-sm font-bold text-gray-500 dark:text-gray-400'>المستخدمين المعينين لهذا الدور</h3>
                                 <div className='flex flex-col gap-2 w-full overflow-y-auto max-h-[200px]'>
-                                    {role.userRoles.map((userRole, index) => (
+                                    {role.userRoles.map((ur, index) => (
                                         <>
-                                            <div key={userRole.id} className='flex items-center justify-between w-full border border-gray-200 dark:border-gray-700 rounded-md p-2'>
-                                                <p className='text-xs text-gray-500 dark:text-gray-400'>{userRole.user.name}</p>
-                                                <TrashIcon className='w-4 h-4 text-red-500 dark:text-red-400 cursor-pointer' onClick={() => handleDeleteUserRole(userRole.id)} />
+                                            <div key={ur.id} className='flex items-center justify-between w-full border border-gray-200 dark:border-gray-700 rounded-md p-2'>
+                                                <p className='text-xs text-gray-500 dark:text-gray-400'>{ur.user.name}</p>
+                                                <TrashIcon className='w-4 h-4 text-red-500 dark:text-red-400 cursor-pointer' onClick={() => handleDeleteUserRole(ur.id)} />
                                             </div>
                                             {index !== role.userRoles.length - 1 && (
                                                 <div className='w-full h-[1px] bg-gray-200 dark:bg-gray-700 mt-1' />
@@ -93,7 +105,7 @@ export default function RoleProfileDialog({ role, assigUserClickHandler }: { rol
                 }
                 <div className='flex items-center justify-end w-full gap-2'>
                     <Button variant="outline" size="sm" onClick={() => assigUserClickHandler(role.id)}>تعيين المستخدمين</Button>
-                    <Button size="sm" className='bg-red-500 hover:bg-red-600 text-white' >حذف الدور</Button>
+                    <Button size="sm" className='bg-red-500 hover:bg-red-600 text-white' onClick={() => handleDeleteRole(role.id)}>حذف الدور</Button>
                     <Button size="sm" className='bg-blue-500 hover:bg-blue-600 text-white' >تعديل الدور</Button>
 
                 </div>

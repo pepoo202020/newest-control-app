@@ -7,22 +7,28 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { convertRoleArabic } from '@/utils/convert-role-arabic'
 import { getRoleImage } from '@/utils/get-role-image'
-import { Role, UserRole } from '@prisma/client'
+import { Role, User, UserRole } from '@prisma/client'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import RoleProfileDialog from '@/components/dashboard/roles/role-profile-dialog'
 import { useRouter } from 'next/navigation'
-interface RoleWithUsers extends Role {
-    userRoles: UserRole[]
+
+interface UserRoleWithUser extends UserRole {
+    user: User
+    role: Role
+}
+
+export interface RolesWithUser extends Role {
+    userRoles: UserRoleWithUser[]
 }
 
 export default function RolesPage() {
-    const [roles, setRoles] = useState<RoleWithUsers[]>([])
+    const [roles, setRoles] = useState<RolesWithUser[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+    const [selectedRole, setSelectedRole] = useState<RolesWithUser | null>(null)
     const router = useRouter()
 
     const assigUserClickHandler = (id: string) => {
@@ -58,7 +64,7 @@ export default function RolesPage() {
             </CustomBreadcrumb>
 
             <div className=' p-2 h-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 gap-5 flex-1'>
-                {filteredRoles.map((role: RoleWithUsers) => (
+                {filteredRoles.map((role: RolesWithUser) => (
                     <Card
                         key={role.id}
                         className={cn(
@@ -78,7 +84,9 @@ export default function RolesPage() {
                                     className="rounded-full object-cover transition-transform duration-300 group-hover:scale-110"
                                 />
                                 <div className="absolute -bottom-1 -right-1 bg-blue-950 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                    {role.userRoles.length}
+                                    {
+                                        role.userRoles.length
+                                    }
                                 </div>
                             </div>
                             
