@@ -4,12 +4,10 @@ import { cn } from "@/lib/utils";
 import { useRole } from "@/providers/role-provider"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 
 export default function MenuNavbar() {
     const { selectedRole } = useRole()
     const pathName = usePathname();
-    const { theme } = useTheme();
     
     const filteredMenuItems = menuItems.filter((item) =>
         item.assignedRoles.includes(selectedRole.toLowerCase())
@@ -29,7 +27,7 @@ export default function MenuNavbar() {
                             "hover:bg-gray-100/80 dark:hover:bg-gray-700/80 rounded-lg",
                             "focus:outline-none focus:ring-2 focus:ring-primary/50",
                             item.link === pathName
-                                ? "text-primary dark:text-primary font-semibold"
+                                ? "text-blue-950 dark:text-blue-500 font-semibold"
                                 : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                         )}
                         aria-current={item.link === pathName ? "page" : undefined}

@@ -8,11 +8,10 @@ import Image from 'next/image'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { RolesWithUser } from '@/app/(dashboard)/dashboard/roles/page'
-import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 
 
 
-export default function RoleProfileDialog({ role, assigUserClickHandler, router }: { role: RolesWithUser , assigUserClickHandler: (id: string) => void,  router: AppRouterInstance }) {
+export default function RoleProfileDialog({ role, assigUserClickHandler }: { role: RolesWithUser , assigUserClickHandler: (id: string) => void }) {
     const [openState, setOpenState] = useState<boolean>(false)
     const handleDeleteUserRole = async (id: string) => {
         try {
@@ -53,7 +52,7 @@ export default function RoleProfileDialog({ role, assigUserClickHandler, router 
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-8 w-8 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                     title="عرض الملف الشخصي"
                 >
                     <Image
@@ -110,7 +109,6 @@ export default function RoleProfileDialog({ role, assigUserClickHandler, router 
                 <div className='flex items-center justify-end w-full gap-2'>
                     <Button variant="outline" size="sm" onClick={() => assigUserClickHandler(role.id)}>تعيين المستخدمين</Button>
                     <Button size="sm" className='bg-red-500 hover:bg-red-600 text-white' onClick={() => handleDeleteRole(role.id)}>حذف الدور</Button>
-                    <Button size="sm" className='bg-blue-500 hover:bg-blue-600 text-white' >تعديل الدور</Button>
 
                 </div>
             </DialogContent>

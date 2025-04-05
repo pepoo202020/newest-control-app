@@ -31,6 +31,8 @@ export default function RolesPage() {
     const [selectedRole, setSelectedRole] = useState<RolesWithUser | null>(null)
     const router = useRouter()
 
+    
+
     const assigUserClickHandler = (id: string) => {
         router.push(`/dashboard/roles/assign-users?roleId=${id}`)
     }
@@ -79,7 +81,7 @@ export default function RolesPage() {
                 <RolesSelectFilter roles={roles} setSelectedRole={setSelectedRole} selectedRole={selectedRole} />
             </CustomBreadcrumb>
 
-            <div className=' p-2 h-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 gap-5 flex-1'>
+            <div className=' px-4 min-h-[calc(100vh-17rem)] p-2 h-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 lg:grid-rows-2 xl:grid-cols-8 gap-5 flex-1'>
                 {filteredRoles.map((role: RolesWithUser) => (
                     <Card
                         key={role.id}
@@ -87,11 +89,11 @@ export default function RolesPage() {
                             "group relative overflow-hidden transition-all duration-300",
                             "hover:shadow-lg hover:scale-[1.02]",
                             "bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm",
-                            "border-gray-200 dark:border-gray-700"
+                            "border-gray-200 dark:border-gray-700 h-fit"
                         )}
                     >
-                        <CardContent className="flex flex-col items-center justify-center p-4">
-                            <div className="relative mb-4">
+                        <CardContent className="flex flex-col items-center justify-center p-1">
+                            <div className="relative mb-2">
                                 <Image
                                     src={getRoleImage(role.name) || ''}
                                     alt={`${convertRoleArabic(role.name)} role`}
@@ -110,8 +112,8 @@ export default function RolesPage() {
                                 {convertRoleArabic(role.name)}
                             </h2>
 
-                            <div className="flex items-center mt-2">
-                                <RoleProfileDialog router={router} role={role} assigUserClickHandler={assigUserClickHandler} />
+                            <div className="flex items-center">
+                                <RoleProfileDialog role={role} assigUserClickHandler={assigUserClickHandler} />
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -127,20 +129,7 @@ export default function RolesPage() {
                                         className="opacity-70"
                                     />
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                    title="تعديل"
-                                >
-                                    <Image
-                                        src="/icons/user.png"
-                                        alt="تعديل"
-                                        width={16}
-                                        height={16}
-                                        className="opacity-70"
-                                    />
-                                </Button>
+                                
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -167,7 +156,7 @@ export default function RolesPage() {
                         "hover:shadow-lg hover:scale-[1.02]",
                         "bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm",
                         "border-gray-200 dark:border-gray-700",
-                        "border-2 border-dashed"
+                        "border-2 border-dashed h-full"
                     )}
                     onClick={() => { router.push('/dashboard/roles/new') }}
                 >

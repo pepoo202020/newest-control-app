@@ -1,7 +1,9 @@
 import {
+  AlignVerticalDistributeEndIcon,
     CalendarCog,
     ChartBar,
     Eye,
+    GalleryVertical,
     Layers,
     LayoutDashboard,
     LucideIcon,
@@ -38,6 +40,18 @@ import {
       Icon: LucideUserRoundCog,
       link: "/dashboard/roles",
       assignedRoles: ["admin"],
+    },
+    {
+      label: {EN: "Levels", AR: 'المستويات'},
+      Icon: GalleryVertical,
+      link: "/dashboard/levels",
+      assignedRoles: ["admin", "teacher", "controller"]
+    },
+    {
+      label: {EN: "Terms", AR: 'الترمات'},
+      Icon: AlignVerticalDistributeEndIcon,
+      link: "/dashboard/terms",
+      assignedRoles: ["admin", "teacher", "controller"]
     },
     {
       label: { EN: "Classes", AR: "الفصول" },
