@@ -28,7 +28,7 @@ export default function DashboardHeader() {
         <LogoComponent size={logoSizes.sm} />
         {/* USER MAIN ROLE HEADER */}
         <h1 className="hidden lg:block text-2xl font-semibold capitalize">
-            لوحة تحكم {convertRoleArabic(selectedRole as string)}
+            {selectedRole && `لوحة تحكم ${convertRoleArabic(selectedRole as string)}`}
         </h1>
         <div className='flex items-center gap-x-5'>
             {/* ROLES CHANGER  */}

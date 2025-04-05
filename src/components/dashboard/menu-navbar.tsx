@@ -10,8 +10,10 @@ export default function MenuNavbar() {
     const pathName = usePathname();
     
     const filteredMenuItems = menuItems.filter((item) =>
-        item.assignedRoles.includes(selectedRole.toLowerCase())
+        item.assignedRoles.includes(selectedRole ? selectedRole.toLowerCase() : selectedRole)
     );
+
+    
 
     return (
         <nav 
